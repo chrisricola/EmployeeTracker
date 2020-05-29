@@ -129,7 +129,7 @@ function addDepartment() {
             {
               type: "input",
               message: "What's the last name of the employee?",
-              name: "lName"
+              name: "lastName"
             },
             {
               type: "input",
