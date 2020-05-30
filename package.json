@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/chrisricola/EmployeeTracker#readme",
   "dependencies": {
+    "console.table": "^0.10.0",
     "inquirer": "^7.1.0",
     "sql": "^0.78.0"
   }
