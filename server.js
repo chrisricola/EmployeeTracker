@@ -23,22 +23,25 @@ const addPrompts = {
     message: "What is the name of the new department?",
     name: "name"
   },
-  // "role": [
-  //   {
-  //     message: "What's the name of the role?",
-  //     name: "title"
-  //   },
-  //   {
-  //     message: "What is the salary for this role?",
-  //     name: "salary"
-  //   },
-  //   {
-  //     message: "What is the department id number?",
-  //     name: "department_id"
-  //   }
-  // ],
+  "role": [
+    {
+      message: "What's the name of the role?",
+      name: "title"
+    },
+    {
+      message: "What is the salary for this role?",
+      name: "salary"
+    },
+    {
+      message: "What is the department id number?",
+      name: "department_id"
+    }
+  ]
 }
 async function runSearch() {
+  try{
+
+  
   const {action} = await inquirer.prompt({
       name: "action",
       type: "list",
@@ -60,30 +63,44 @@ async function runSearch() {
        const table = await db.viewAll(action.split(' ')[1].slice(0,action.split(' ')[1].length-1))
         console.table(table);
         setTimeout(runSearch,2000);
+        break;
       case "Add":
        const data = await inquirer.prompt(addPrompts[action.split(' ')[1]]);
         await db.addOne(action.split(' ')[1],data);
         console.log('added new record!');
-        setTimeout(runSearch, 2000)
-
-      // case "Update employee role":
-      //   const update = await inquirer.prompt(addPrompts[action.split(' ')[1]]);
-      //   await db.updateOne(action.split(' ')[1],update);
-      //   console.log('added new record!');
-      //   setTimeout(runSearch, 2000)
-      //   break;
-
-      case "exit":
-        connection.end();
+        setTimeout(runSearch, 2000);
         break;
-      }
-  
-    console.log("oops I didn't wait")
-}
+      case "Update":
+        const emp = await db.viewAll('employee');
+        const empChoices = emp.reduce((a,b)=> (a[`${b.first_name} ${b.last_name}`]=b.id,a),{});
+        const roles = await db.viewAll('role');
+        const roleChoices = roles.reduce((a,b)=> (a[b.title]=b.id, a),{});
+        const {id,role_id} = await inquirer.prompt([
+          {
+            message: "Which employee would you like to update?",
+            type: "list",
+            name: "id",
+            choices: Object.keys(empChoices)
+          },
+          {
+            message: "What is this person's new role?",
+            type: "list",
+            name: "role_id",
+            choices: Object.keys(roleChoices)
+          }
+        ]);
 
-async function addPrompt(prompt){
-  return await inquirer.prompt(prompt)
-  .catch(err => this._errorMessage(err.code));
+       await db.updateRole('employee', empChoices[id],roleChoices[role_id])
+       console.log('success!')
+        setTimeout(runSearch, 2000)
+        break;
+
+      case "Exit":
+        return
+      }
+}catch(err){
+  console.log(err)
+  }
 }
 
 // function addDepartment() {
